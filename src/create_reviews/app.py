@@ -24,6 +24,7 @@ def lambda_handler(event, context):
         "id": str(uuid.uuid4()),
         "questionsAndAnswers": dict(payload)["questionsAndAnswers"],
         "name": payload["name"],
+        "userName": payload["userName"],
         "address": payload["address"],
         "openData": payload["openData"],
         "imageurl": payload["imageurl"],

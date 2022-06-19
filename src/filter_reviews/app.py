@@ -29,7 +29,7 @@ def lambda_handler(event, context):  # sourcery skip: avoid-builtin-shadow
         "headers": {
             "Access-Control-Allow-Headers": "Content-Type",
             "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
+            "Access-Control-Allow-Methods": "OPTIONS,GET",
         },
         "body": json.dumps(response["Items"], cls=DecimalEncoder),
     }
