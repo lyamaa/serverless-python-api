@@ -13,12 +13,12 @@ def lambda_handler(event, context):
     if "body" not in event or event["httpMethod"] != "GET":
         return {"statusCode": 400, "body": json.dumps({"error": "Bad request"})}
 
-    table_name = os.environ.get("TABLE", "Reviews")
+    table_name = os.environ.get("TABLE", "Coupons")
     region = os.environ.get("REGION", "ap-southeast-2")
 
-    review_table = boto3.resource("dynamodb", region_name=region).Table(table_name)
+    coupons_table = boto3.resource("dynamodb", region_name=region).Table(table_name)
 
-    response = review_table.scan()
+    response = coupons_table.scan()
 
     return {
         "statusCode": 200,

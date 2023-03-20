@@ -25,6 +25,7 @@ def lambda_handler(event, context):
         "questionsAndAnswers": dict(payload)["questionsAndAnswers"],
         "name": payload["name"],
         "userName": payload["userName"],
+        "email": payload["email"],
         "address": payload["address"],
         "openData": payload["openData"],
         "imageurl": payload["imageurl"],

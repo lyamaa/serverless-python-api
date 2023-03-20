@@ -21,8 +21,12 @@ def lambda_handler(event, context):  # sourcery skip: avoid-builtin-shadow
     review_table = boto3.resource("dynamodb", region_name=region).Table(table_name)
 
     filter_by_name = event["queryStringParameters"].get("name")
+    filter_by_email = event["queryStringParameters"].get("email")
 
-    response = review_table.scan(FilterExpression=Key("name").eq(filter_by_name))
+    response = review_table.scan(
+        FilterExpression=Key("name").eq(filter_by_name)
+        | Key("email").eq(filter_by_email)
+    )
 
     return {
         "statusCode": 200,

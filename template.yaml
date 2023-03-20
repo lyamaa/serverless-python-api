@@ -8,7 +8,7 @@ Description: >
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 900 # 15 minutes
     Tracing: Active
 
 Resources:
@@ -27,6 +27,22 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref ReviewsTable
+  
+  CreateCouponsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/create_coupon/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Events:
+        CreateReview:
+          Type: Api
+          Properties:
+            Path: /coupons
+            Method: post
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CouponTable
 
   ListReviewsFunction:
     Type: AWS::Serverless::Function
@@ -43,6 +59,22 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref ReviewsTable
+
+  ListCouponFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/fetch_coupon/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Events:
+        ListReviews:
+          Type: Api
+          Properties:
+            Path: /coupons
+            Method: get
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CouponTable
   
 
   FilterReviewsFunction:
@@ -61,12 +93,57 @@ Resources:
               - method.request.querystring.name:
                   Required: true
                   Caching: true
+              - method.request.querystring.email:
+                  Required: true
+                  Caching: true
               - method.request.header.Authorization:
                   Required: true
                   Caching: true
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref ReviewsTable
+  
+  FilterCouponsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/filter_coupon/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Events:
+        FilterReivews:
+          Type: Api
+          Properties:
+            Path: /coupons/filter/
+            Method: get
+            RequestParameters:
+              - method.request.querystring.name:
+                  Required: true
+                  Caching: true
+              - method.request.querystring.user_email:
+                  Required: true
+                  Caching: true
+              - method.request.header.Authorization:
+                  Required: true
+                  Caching: true
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CouponTable
+
+  DeleteCouponsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/delete_coupon/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Events:
+        DeleteItems:
+          Type: Api
+          Properties:
+            Path: /coupons/{id}
+            Method: delete
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CouponTable
 
 
   ReviewsTable:
@@ -82,8 +159,26 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1
+  
+  CouponTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: "Coupons"
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1 # Read capacity is auto scaled by AWS
+        WriteCapacityUnits: 1 # Write capacity is auto scaled by AWS
 
 Outputs:
   ReviewsApi:
     Description: "API GATEWAY Items endpoints"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/reviews/"
+  
+  CouponApi:
+    Description: "API GATEWAY Coupons endpoints"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/coupons/"
